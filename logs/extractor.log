@@ -1,0 +1,4 @@
+2025-08-01 02:32:43.465 | INFO     | __main__:process_directory:103 - Found 0 PDF files in data\raw
+2025-08-01 02:32:43.468 | INFO     | __main__:process_directory:111 - Processing complete. Success: 0, Failures: 0
+2025-08-01 02:37:59.476 | INFO     | __main__:process_directory:78 - Found 0 PDF files in data\raw
+2025-08-01 02:37:59.477 | INFO     | __main__:process_directory:87 - Processing complete. Success: 0, Failures: 0
