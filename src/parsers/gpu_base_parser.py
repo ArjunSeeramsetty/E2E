@@ -84,12 +84,10 @@ class GPUBaseParser(ABC):
             # Use docling's convert method with GPU acceleration
             result = self.converter.convert(pdf_path)
             logger.info(f"Conversion result type: {type(result)}")
-            logger.info(f"Conversion result attributes: {dir(result)}")
             
             # Get the document content
             document = result.document
             logger.info(f"Document type: {type(document)}")
-            logger.info(f"Document attributes: {dir(document)}")
             
             # Extract tables from the document
             tables = []
@@ -114,13 +112,7 @@ class GPUBaseParser(ABC):
             elif hasattr(document, 'content'):
                 # Try to find tables in content
                 logger.info("Document has content attribute, searching for tables...")
-                logger.info(f"Document structure: {type(document)}")
-                logger.info(f"Document attributes: {dir(document)}")
-                
-                # Try to access content and look for tables
                 content = document.content
-                logger.info(f"Content type: {type(content)}")
-                logger.info(f"Content attributes: {dir(content)}")
                 
                 if hasattr(content, 'elements'):
                     logger.info(f"Content has {len(content.elements)} elements")
@@ -143,7 +135,6 @@ class GPUBaseParser(ABC):
             
             for i, table in enumerate(tables):
                 logger.info(f"Processing table {i+1}: {type(table)}")
-                logger.info(f"Table {i+1} attributes: {dir(table)}")
                 
                 # Try to get table data
                 table_data = self._convert_table_to_list(table)
@@ -210,8 +201,11 @@ class GPUBaseParser(ABC):
     def _convert_table_to_list(self, table) -> List[List[str]]:
         """Convert docling table to list of lists format"""
         try:
+            logger.info(f"Converting table with attributes: {dir(table)}")
+            
             # Check if table has value attribute
             if hasattr(table, 'value') and table.value:
+                logger.info(f"Table has value attribute: {type(table.value)}")
                 # Handle different table formats
                 if isinstance(table.value, list):
                     return table.value
@@ -226,19 +220,20 @@ class GPUBaseParser(ABC):
             elif hasattr(table, 'rows'):
                 logger.info(f"Table has rows attribute with {len(table.rows)} rows")
                 result = []
-                for row in table.rows:
+                for row_idx, row in enumerate(table.rows):
                     row_data = []
-                    for cell in row:
+                    for cell_idx, cell in enumerate(row):
                         if hasattr(cell, 'text'):
-                            row_data.append(cell.text)
+                            row_data.append(cell.text.strip())
                         else:
-                            row_data.append(str(cell))
-                    result.append(row_data)
+                            row_data.append(str(cell).strip())
+                    if row_data:  # Only add non-empty rows
+                        result.append(row_data)
                 return result
             
             # Check if table has cells attribute
             elif hasattr(table, 'cells'):
-                logger.info(f"Table has cells attribute")
+                logger.info(f"Table has cells attribute with {len(table.cells)} cells")
                 # Try to organize cells into rows
                 cells = table.cells
                 if hasattr(cells, '__iter__'):
@@ -257,7 +252,8 @@ class GPUBaseParser(ABC):
                         row_data = []
                         for col_idx in sorted(rows[row_idx].keys()):
                             row_data.append(rows[row_idx][col_idx])
-                        result.append(row_data)
+                        if row_data:  # Only add non-empty rows
+                            result.append(row_data)
                     return result
             
             # Check if table has data attribute
@@ -288,58 +284,91 @@ class GPUBaseParser(ABC):
             return []
     
     def _identify_table(self, headers: List[str]) -> str:
-        """Identify table type based on headers"""
-        header_text = " ".join(headers).lower()
+        """Enhanced table identification based on real NLDC/RLDC PDF structures"""
+        if not headers:
+            return "unknown"
         
-        # Log the headers for debugging
+        header_text = " ".join(headers).lower()
         logger.info(f"Table headers: {headers}")
         logger.info(f"Header text: {header_text}")
         
-        # NLDC table identification patterns
-        if "power supply position" in header_text and "regional" in header_text:
+        # Check if headers are just single characters (likely time series data)
+        if len(headers) > 0 and all(len(h.strip()) <= 2 for h in headers):
+            logger.info("Headers are single characters - likely time series data")
+            return "time_series_data"
+        
+        # Enhanced NLDC table identification patterns
+        # Regional Summary - Look for region codes in headers
+        region_codes = ['nr', 'wr', 'sr', 'er', 'ner', 'total', 'all india']
+        if any(code in header_text for code in region_codes):
             return "regional_summary"
-        elif "power supply position" in header_text and "states" in header_text:
+        
+        # State Summary - Look for state-related headers
+        state_keywords = ['states', 'state', 'max.demand', 'shortage', 'drawal', 'od', 'ud']
+        if any(keyword in header_text for keyword in state_keywords):
             return "state_summary"
-        elif "sourcewise generation" in header_text or "source wise" in header_text:
+        
+        # Generation by Source - Look for source-related headers
+        source_keywords = ['source', 'sourcewise', 'generation', 'mu', 'all india']
+        if any(keyword in header_text for keyword in source_keywords):
             return "generation_by_source"
-        elif "frequency profile" in header_text:
+        
+        # Frequency Profile - Look for frequency-related headers
+        frequency_keywords = ['frequency', 'fvi', '<49.7', '49.7-49.8', '49.8-49.9', '49.9-50.0', '50.0-50.1', '>50.1']
+        if any(keyword in header_text for keyword in frequency_keywords):
             return "frequency_profile"
-        elif "inter regional" in header_text or "inter-regional" in header_text:
+        
+        # Inter-Regional Exchange - Look for exchange-related headers
+        exchange_keywords = ['import', 'export', 'inter-regional', 'inter regional', 'exchange']
+        if any(keyword in header_text for keyword in exchange_keywords):
             return "inter_regional_exchange"
-        elif "transnational" in header_text or "international" in header_text:
+        
+        # Transnational Exchange - Look for country names
+        country_keywords = ['bhutan', 'nepal', 'bangladesh', 'myanmar', 'pakistan']
+        if any(keyword in header_text for keyword in country_keywords):
             return "transnational_exchange"
-        elif "generation outage" in header_text:
+        
+        # Generation Outage - Look for outage-related headers
+        outage_keywords = ['outage', 'capacity', 'mw', 'planned', 'forced']
+        if any(keyword in header_text for keyword in outage_keywords):
             return "generation_outage"
-        elif "station" in header_text and "generation" in header_text:
+        
+        # Station Generation - Look for station-related headers
+        station_keywords = ['station', 'plant', 'thermal', 'hydro', 'nuclear', 'renewable']
+        if any(keyword in header_text for keyword in station_keywords):
             return "station_generation"
-        elif "time" in header_text and ("frequency" in header_text or "demand" in header_text):
-            return "frequency_profile"
-        elif "time" in header_text and "generation" in header_text:
-            return "generation_profile"
-        # Add more generic patterns for time-series data
-        elif "time" in header_text:
+        
+        # Time series data - Look for time-related patterns
+        time_keywords = ['time', 'hour', 'frequency', 'demand', 'generation']
+        if any(keyword in header_text for keyword in time_keywords):
             return "time_series_data"
-        elif len(headers) > 0 and any("time" in h.lower() for h in headers):
+        
+        # If we have numeric data in the first row, it's likely time series
+        if len(headers) > 0 and any(re.match(r'^\d+', h.strip()) for h in headers):
             return "time_series_data"
-        elif len(headers) > 0 and any("frequency" in h.lower() for h in headers):
+        
+        # Generic patterns for time-series data
+        if len(headers) > 0 and any("frequency" in h.lower() for h in headers):
             return "time_series_data"
         elif len(headers) > 0 and any("demand" in h.lower() for h in headers):
             return "time_series_data"
         elif len(headers) > 0 and any("generation" in h.lower() for h in headers):
             return "time_series_data"
-        # If we have numeric data in the first row, it's likely time series
-        elif len(headers) > 0 and any(re.match(r'^\d+', h.strip()) for h in headers):
-            return "time_series_data"
-        else:
-            return "unknown"
+        
+        return "unknown"
     
     def _clean_numeric_value(self, value: str) -> Optional[Decimal]:
-        """Clean and convert string to Decimal"""
+        """Enhanced numeric cleaning to handle various formats including negative values in parentheses"""
         if not value or value.strip() == "" or value.strip() == "-":
             return None
         
-        # Remove common non-numeric characters
-        cleaned = re.sub(r'[^\d.-]', '', value.strip())
+        # Handle negative values in parentheses like "(–23.4)"
+        cleaned = value.strip()
+        if cleaned.startswith('(') and cleaned.endswith(')'):
+            cleaned = '-' + cleaned[1:-1]  # Convert (123.4) to -123.4
+        
+        # Remove common non-numeric characters but keep decimal points and minus signs
+        cleaned = re.sub(r'[^\d.-]', '', cleaned)
         
         try:
             return Decimal(cleaned)
@@ -348,16 +377,26 @@ class GPUBaseParser(ABC):
             return None
     
     def _extract_date_from_filename(self, filename: str) -> str:
-        """Extract date from filename like '19.04.25_NLDC_PSP.pdf'"""
-        # Look for date patterns like DD.MM.YY or DD.MM.YYYY
-        date_pattern = r'(\d{2})\.(\d{2})\.(\d{2,4})'
-        match = re.search(date_pattern, filename)
+        """Enhanced date extraction to handle various filename formats"""
+        # Look for date patterns like DD.MM.YY, DD.MM.YYYY, DD-MM-YYYY, etc.
+        date_patterns = [
+            r'(\d{2})\.(\d{2})\.(\d{2,4})',  # DD.MM.YY or DD.MM.YYYY
+            r'(\d{2})-(\d{2})-(\d{4})',      # DD-MM-YYYY
+            r'(\d{4})-(\d{2})-(\d{2})',      # YYYY-MM-DD
+        ]
         
-        if match:
-            day, month, year = match.groups()
-            if len(year) == 2:
-                year = f"20{year}"
-            return f"{year}-{month}-{day}"
+        for pattern in date_patterns:
+            match = re.search(pattern, filename)
+            if match:
+                groups = match.groups()
+                if len(groups) == 3:
+                    if len(groups[0]) == 4:  # YYYY-MM-DD format
+                        year, month, day = groups
+                    else:  # DD.MM.YY or DD-MM-YYYY format
+                        day, month, year = groups
+                        if len(year) == 2:
+                            year = f"20{year}"
+                    return f"{year}-{month}-{day}"
         
         raise ValueError(f"Could not extract date from filename: {filename}")
     
