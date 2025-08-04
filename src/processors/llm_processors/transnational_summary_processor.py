@@ -6,7 +6,7 @@ This processor handles the 'Transnational Summary' table type.
 It extracts transnational summary data with countries and their energy/power metrics.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict
 from loguru import logger
 

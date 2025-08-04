@@ -8,7 +8,7 @@ based on regional and state maximum demands.
 
 import pandas as pd
 from typing import List, Dict, Optional
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from loguru import logger
 
 

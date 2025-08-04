@@ -6,7 +6,7 @@ This processor handles the 'Inter-regional Transmission Line Flow' table type.
 It extracts inter-regional transmission data and structures it for database storage.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict, Optional
 from loguru import logger
 import pandas as pd

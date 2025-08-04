@@ -6,7 +6,7 @@ This processor handles the 'Transnational Transmission Line Flow' table type.
 It extracts transnational transmission data and structures it for database storage.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict
 from loguru import logger
 

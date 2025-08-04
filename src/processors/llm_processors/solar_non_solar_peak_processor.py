@@ -6,7 +6,7 @@ This processor handles the 'Solar/Non-Solar Hour Peak Demand' table type.
 It extracts peak demand data for solar and non-solar hours and structures it for database storage.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict
 from loguru import logger
 

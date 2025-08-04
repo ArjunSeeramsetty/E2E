@@ -6,7 +6,7 @@ This processor handles the 'Regional Daily Summary' table type.
 It extracts regional power supply data and structures it for database storage.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict
 from loguru import logger
 

@@ -9,30 +9,35 @@ Each processor handles the specific structural and data format requirements of i
 import pandas as pd
 from typing import Optional
 
-# Import base processor and specific processors
+# Import base processor
 from .base_processor import BaseProcessor
-from .regional_summary_processor import RegionalSummaryProcessor
-from .state_summary_processor import StateSummaryProcessor
-from .generation_by_source_processor import GenerationBySourceProcessor
-from .generation_outages_processor import GenerationOutagesProcessor
-from .inter_region_transmission_processor import InterRegionTransmissionProcessor
-from .transnational_transmission_processor import TransnationalTransmissionProcessor
-from .transnational_exchange_processor import TransnationalExchangeProcessor
-from .transnational_summary_processor import TransnationalSummaryProcessor
-from .regional_import_export_summary_processor import RegionalImportExportSummaryProcessor
-from .share_processor import ShareProcessor
-from .solar_non_solar_peak_processor import SolarNonSolarPeakProcessor
-from .frequency_profile_processor import FrequencyProfileProcessor
-from .scada_timeseries_processor import ScadaTimeseriesProcessor
-from .ddf_processor import DDFProcessor
 
-# Import legacy functions for backward compatibility
-from .raw_state_table_processing import (
+# Import LLM-based processors
+from .llm_processors import (
+    RegionalSummaryProcessor,
+    GenerationBySourceProcessor,
+    GenerationOutagesProcessor,
+    TransnationalTransmissionProcessor,
+    TransnationalExchangeProcessor,
+    SolarNonSolarPeakProcessor,
+    TransnationalSummaryProcessor,
+    ShareProcessor,
+    RegionalImportExportSummaryProcessor,
+    ScadaTimeseriesProcessor,
+    FrequencyProfileProcessor,
+)
+
+# Import logical/rule-based processors
+from .logical_processors import (
+    StateSummaryProcessor,
+    DDFProcessor,
+    InterRegionTransmissionProcessor,
+    # Legacy functions for backward compatibility
     process_state_table_robustly,
     validate_state_table_data,
     get_state_table_summary,
     detect_row_structure_robust,
-    extract_numeric_value_robust
+    extract_numeric_value_robust,
 )
 
 # Map table types to their corresponding processor classes

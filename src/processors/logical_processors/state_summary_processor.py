@@ -6,7 +6,7 @@ This processor handles the 'State Daily Summary' table type.
 It uses robust processing logic to handle structural inconsistencies in state data.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from .raw_state_table_processing import (
     process_state_table_robustly,
     validate_state_table_data,

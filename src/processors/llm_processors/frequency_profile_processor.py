@@ -6,7 +6,7 @@ This processor handles the 'Frequency Profile' table type.
 It extracts frequency profile data and structures it for database storage.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict
 from loguru import logger
 

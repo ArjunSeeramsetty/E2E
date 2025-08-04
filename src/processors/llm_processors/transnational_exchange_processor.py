@@ -6,7 +6,7 @@ This processor handles the 'Transnational Exchange' table type.
 It extracts country-wise transnational exchange data and structures it for database storage.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict
 from loguru import logger
 

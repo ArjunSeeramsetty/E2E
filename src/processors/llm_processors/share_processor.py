@@ -6,7 +6,7 @@ This processor handles the 'Share' table type.
 It extracts share data with measures and regions.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict
 from loguru import logger
 

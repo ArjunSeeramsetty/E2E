@@ -6,7 +6,7 @@ This processor handles the 'Regional Import Export Summary' table type.
 It extracts regional import/export summary data with regions and their energy metrics.
 """
 
-from .base_processor import BaseProcessor
+from ..base_processor import BaseProcessor
 from typing import List, Dict
 from loguru import logger
 
