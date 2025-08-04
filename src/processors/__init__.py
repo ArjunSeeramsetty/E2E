@@ -24,6 +24,7 @@ from .share_processor import ShareProcessor
 from .solar_non_solar_peak_processor import SolarNonSolarPeakProcessor
 from .frequency_profile_processor import FrequencyProfileProcessor
 from .scada_timeseries_processor import ScadaTimeseriesProcessor
+from .ddf_processor import DDFProcessor
 
 # Import legacy functions for backward compatibility
 from .raw_state_table_processing import (
@@ -49,6 +50,7 @@ PROCESSOR_MAP = {
     "solar_non_solar_peak": SolarNonSolarPeakProcessor,
     "frequency_profile": FrequencyProfileProcessor,
     "scada_timeseries": ScadaTimeseriesProcessor,
+    "ddf": DDFProcessor,
 }
 
 def get_processor(table_df: pd.DataFrame) -> Optional[BaseProcessor]:
@@ -88,6 +90,7 @@ __all__ = [
     'SolarNonSolarPeakProcessor',
     'FrequencyProfileProcessor',
     'ScadaTimeseriesProcessor',
+    'DDFProcessor',
     'get_processor',
     'PROCESSOR_MAP'
 ] 
