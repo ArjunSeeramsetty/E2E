@@ -13,7 +13,7 @@ from loguru import logger
 class GenerationOutagesProcessor(BaseProcessor):
     """Processor for the 'Generation Outages' table."""
     TABLE_TYPE = "generation_outages"
-    KEYWORDS = ['outage', 'generation outage', 'sector', 'central sector', 'state sector', 'mw']
+    KEYWORDS = ['outage', 'generation outage', 'sector', 'central sector', 'state sector', 'mw', 'central sector', 'state sector', 'total', '% share']
     REQUIRED_COLUMNS = [
         "sector_name", "region_name", "power_outage_capacity_mw", "report_date"
     ]

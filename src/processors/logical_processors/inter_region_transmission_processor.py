@@ -14,7 +14,7 @@ import pandas as pd
 class InterRegionTransmissionProcessor(BaseProcessor):
     """Processor for the 'Inter-regional Transmission Line Flow' table."""
     TABLE_TYPE = "inter_regional_transmission"
-    KEYWORDS = ['inter-regional', 'voltage_level', 'line_details', 'sl_no', 'no_of_circuit', 'max import', 'max export', 'import', 'net']
+    KEYWORDS = ['inter-regional transmission', 'voltage_level', 'line_details', 'sl_no', 'no_of_circuit', 'max import', 'max export', 'import', 'net', 'inter-regional transmission line']
     REQUIRED_COLUMNS = [
         "sl_no", "voltage_level", "line_details", "no_of_circuit", "from_region", "to_region", "power_max_import_mw", "power_max_export_mw", "energy_import_mu", "energy_export_mu", "energy_net_mu", "report_date"
     ]

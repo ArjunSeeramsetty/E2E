@@ -13,7 +13,7 @@ from loguru import logger
 class TransnationalTransmissionProcessor(BaseProcessor):
     """Processor for the 'Transnational Transmission Line Flow' table."""
     TABLE_TYPE = "transnational_transmission"
-    KEYWORDS = ['transnational', 'state', 'region', 'line_name', 'max', 'min', 'avg', 'energy exchange']
+    KEYWORDS = ['transnational transmission', 'state', 'region', 'line_name', 'max', 'min', 'avg', 'energy exchange', 'transnational transmission line']
     REQUIRED_COLUMNS = [
         "state", "region", "line_name", "power_max_mw", "power_min_mw", "power_avg_mw", "energy_exchange_mu", "report_date"
     ]

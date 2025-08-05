@@ -13,7 +13,7 @@ from loguru import logger
 class RegionalImportExportSummaryProcessor(BaseProcessor):
     """Processor for the 'Regional Import Export Summary' table."""
     TABLE_TYPE = "regional_import_export_summary"
-    KEYWORDS = ['nr', 'wr', 'sr', 'er', 'ner', 'total', 'schedule', 'actual', 'o/d/u/d', 'mu', 'regional', 'import', 'export']
+    KEYWORDS = ['schedule(mu)', 'actual(mu)', 'o/d/u/d(mu)', 'regional import export summary', 'schedule', 'actual', 'o/d/u/d', 'schedule(mu)', 'actual(mu)', 'o/d/u/d(mu)']
     REQUIRED_COLUMNS = [
         "region", "energy_schedule_mu", "energy_actual_mu", "energy_overdrawal_mu", "report_date"
     ]

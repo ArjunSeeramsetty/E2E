@@ -13,6 +13,10 @@ import os
 from typing import List, Dict, Any, Optional
 import pandas as pd
 from loguru import logger
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class BaseProcessor:
     """
@@ -31,30 +35,9 @@ class BaseProcessor:
     LLM_TIMEOUT = 120
     LLM_MAX_RETRIES = 2
 
-    @staticmethod
-    def detect_table_type(table_df: pd.DataFrame) -> str:
-        """
-        Detects table type based on keywords in its content.
-        This method is now static and can be called from the factory.
-        """
-        if table_df.empty:
-            return 'unknown'
-        
-        content_sample = " ".join(map(str, table_df.columns)) + " " + " ".join(map(str, table_df.head(2).values.flatten()))
-        content_sample = content_sample.lower()
-
-        # This part needs to be aware of all processor types
-        from . import PROCESSOR_MAP
-        scores = {}
-        for type_name, processor_class in PROCESSOR_MAP.items():
-            score = sum(1 for pattern in processor_class.KEYWORDS if pattern in content_sample)
-            scores[type_name] = score
-
-        if not scores:
-            return 'unknown'
-            
-        best_type = max(scores, key=scores.get)
-        return best_type if scores[best_type] > 0 else 'unknown'
+    def detect_table_type(self, df: pd.DataFrame) -> str:
+        """Table type detection is now handled by the unified factory system."""
+        return 'unknown'  # Individual processors no longer handle detection
 
     def call_llm_with_retry(self, prompt: str) -> Optional[str]:
         """Calls the OpenAI API with a retry mechanism."""

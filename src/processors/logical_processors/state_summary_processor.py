@@ -18,7 +18,7 @@ from loguru import logger
 class StateSummaryProcessor(BaseProcessor):
     """Processor for the 'State Daily Summary' table using robust processing."""
     TABLE_TYPE = "state_daily_summary"
-    KEYWORDS = ['state', 'states', 'maximum demand', 'drawal schedule', 'od/ud']
+    KEYWORDS = ['state', 'states', 'maximum demand', 'drawal schedule', 'od/ud', 'max.demand met during the day', 'shortage during maximum demand', 'energy met', 'drawal schedule', 'od(+)/ud(-)', 'max od', 'energy shortage']
     REQUIRED_COLUMNS = [
         "region_code", "state_name", "power_max_demand_met_day_mw", "energy_met_mu", "report_date"
     ]

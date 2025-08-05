@@ -24,6 +24,10 @@ import io
 import json
 import time
 import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Import tabula directly without any JVM configuration
 import tabula
@@ -37,6 +41,8 @@ import numpy as np
 
 # Import the processor system
 from src.processors import get_processor
+from src.processors import get_processor_info
+from src.processors import mark_table_type_as_used, reset_used_table_types
 from loguru import logger
 
 # LLM Configuration
@@ -416,62 +422,92 @@ def process_table_with_llm_fallback(table_df: pd.DataFrame, table_index: int, re
             'error': str(e)
         }
 
-def process_table_hybrid(table_df: pd.DataFrame, table_index: int, report_date: str) -> Dict[str, Any]:
+def process_table_hybrid(table_df: pd.DataFrame, report_date: str = "2025-04-19", detected_type: str = None) -> Dict[str, Any]:
     """
-    Process table using hybrid approach: logical processor first, LLM fallback.
+    Process a single table using the unified detection and processor selection system.
+    Args:
+        table_df: DataFrame containing the table data
+        report_date: Report date string
+        detected_type: Pre-detected table type (if None, will detect automatically)
+    Returns:
+        Dictionary containing processing results
     """
-    logger.info(f"Processing table {table_index} with hybrid approach...")
-    
     try:
-        # Step 1: Try to get processor using the factory
-        processor = get_processor(table_df)
+        # Use pre-detected type if provided, otherwise detect
+        if detected_type is None:
+            processor_info = get_processor_info(table_df)
+            detected_type = processor_info['detected_type']
+            confidence = processor_info['confidence']
+        else:
+            confidence = 1.0  # Assume high confidence for pre-detected types
         
+        logger.info(f"Table detection: {detected_type} (confidence: {confidence:.2f})")
+
+        # Mark this table type as used to prevent re-detection
+        if detected_type != "unknown":
+            mark_table_type_as_used(detected_type)
+
+        # Get the appropriate processor (prefer logical processors) using the detected type
+        processor = get_processor(table_df, prefer_logical=True, detected_type=detected_type)
+
         if processor is None:
-            logger.warning(f"Table {table_index}: No processor found, trying LLM fallback")
-            return process_table_with_llm_fallback(table_df, table_index, report_date)
-        
-        logger.info(f"Table {table_index}: Found processor {processor.__class__.__name__}")
-        
-        # Step 2: Try logical processing first
-        try:
-            logger.info(f"Table {table_index}: Attempting logical processing...")
-            structured_data = processor.process(table_df, report_date)
-            
-            if structured_data is not None and len(structured_data) > 0:
-                logger.info(f"Table {table_index}: Logical processing successful ({len(structured_data)} records)")
+            logger.error("No suitable processor found for table")
+            return {
+                "success": False,
+                "error": "No suitable processor found",
+                "detected_type": detected_type,
+                "confidence": confidence
+            }
+
+        # Process the table
+        logger.info(f"Processing with {processor.__class__.__name__}")
+        processed_data = processor.process(table_df, report_date)
+
+        if processed_data:
+            # Validate the processed data
+            if hasattr(processor, 'validate') and processor.validate(processed_data):
+                logger.info(f"Successfully processed {len(processed_data)} records")
+
+                # Generate summary if available
+                summary = {}
+                if hasattr(processor, 'get_summary'):
+                    summary = processor.get_summary(processed_data)
+
                 return {
-                    'table_index': table_index,
-                    'table_type': processor.TABLE_TYPE,
-                    'structured_data': structured_data,
-                    'processing_method': 'logical',
-                    'processor_class': processor.__class__.__name__,
-                    'error': None
+                    "success": True,
+                    "processor_type": processor.__class__.__name__,
+                    "detected_type": detected_type,
+                    "confidence": confidence,
+                    "records_count": len(processed_data),
+                    "data": processed_data,
+                    "summary": summary
                 }
             else:
-                logger.warning(f"Table {table_index}: Logical processing returned no data, trying LLM fallback")
-                
-        except Exception as e:
-            logger.warning(f"Table {table_index}: Logical processing failed: {e}, trying LLM fallback")
-        
-        # Step 3: Fallback to LLM processing
-        logger.info(f"Table {table_index}: Attempting LLM fallback...")
-        llm_result = process_table_with_llm_fallback(table_df, table_index, report_date)
-        
-        # Update the result to indicate it was a fallback
-        if llm_result['processing_method'] == 'llm_fallback':
-            llm_result['processing_method'] = 'llm_fallback_after_logical'
-            llm_result['logical_processor_attempted'] = processor.__class__.__name__
-        
-        return llm_result
-        
+                logger.error("Validation failed for processed data")
+                return {
+                    "success": False,
+                    "error": "Validation failed",
+                    "processor_type": processor.__class__.__name__,
+                    "detected_type": detected_type,
+                    "confidence": confidence
+                }
+        else:
+            logger.error("No data extracted from table")
+            return {
+                "success": False,
+                "error": "No data extracted",
+                "processor_type": processor.__class__.__name__,
+                "detected_type": detected_type,
+                "confidence": confidence
+            }
+
     except Exception as e:
-        logger.error(f"Error in hybrid processing for table {table_index}: {e}")
+        logger.error(f"Error processing table: {e}")
         return {
-            'table_index': table_index,
-            'table_type': 'unknown',
-            'structured_data': None,
-            'processing_method': 'hybrid_error',
-            'error': str(e)
+            "success": False,
+            "error": str(e),
+            "detected_type": "unknown",
+            "confidence": 0.0
         }
 
 def process_all_tables_hybrid(tables: List[pd.DataFrame], report_date: str = None) -> List[Dict[str, Any]]:
@@ -479,6 +515,9 @@ def process_all_tables_hybrid(tables: List[pd.DataFrame], report_date: str = Non
     Process all tables using hybrid approach: logical processors first, LLM fallback.
     """
     logger.info(f"Starting hybrid table processing for {len(tables)} tables...")
+    
+    # Reset used table types at the beginning
+    reset_used_table_types()
     
     if not report_date:
         report_date = datetime.now().strftime("%Y-%m-%d")
@@ -491,7 +530,7 @@ def process_all_tables_hybrid(tables: List[pd.DataFrame], report_date: str = Non
         if i > 0:
             time.sleep(1)
         
-        result = process_table_hybrid(table, i+1, report_date)
+        result = process_table_hybrid(table, report_date)
         results.append(result)
         
         # Log progress
@@ -500,21 +539,6 @@ def process_all_tables_hybrid(tables: List[pd.DataFrame], report_date: str = Non
         else:
             processing_method = result.get('processing_method', 'unknown')
             logger.info(f"Table {i+1}: Successfully processed as {result['table_type']} using {processing_method}")
-    
-    # Summary
-    successful = sum(1 for r in results if r['structured_data'] is not None)
-    failed = len(results) - successful
-    
-    # Count processing methods
-    logical_count = sum(1 for r in results if r.get('processing_method') == 'logical')
-    llm_fallback_count = sum(1 for r in results if 'llm_fallback' in r.get('processing_method', ''))
-    
-    logger.info(f"Hybrid processing completed:")
-    logger.info(f"  - Total tables: {len(results)}")
-    logger.info(f"  - Successful: {successful}")
-    logger.info(f"  - Failed: {failed}")
-    logger.info(f"  - Logical processing: {logical_count}")
-    logger.info(f"  - LLM fallback: {llm_fallback_count}")
     
     return results
 

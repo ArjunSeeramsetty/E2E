@@ -13,7 +13,7 @@ from loguru import logger
 class ScadaTimeseriesProcessor(BaseProcessor):
     """Processor for the 'SCADA Time Series' table."""
     TABLE_TYPE = "scada_timeseries"
-    KEYWORDS = ['scada', 'time', 'timestamp', 'instantaneous', '15-minute', 'all india scada', 'frequency', 'demand']
+    KEYWORDS = ['scada', 'time', 'timestamp', 'instantaneous', '15-minute', 'all india scada', 'frequency', 'demand', '15 min (instantaneous)', 'grid frequency', 'generation & demand met', 'scada data', 'time', 'frequency (hz)', 'demand met (mw)', 'nuclear (mw)', 'wind (mw)', 'solar (mw)', 'hydro** (mw)', 'gas (mw)', 'thermal (mw)', 'others* (mw)', 'net demand met (mw)', 'total generation (mw)', 'net transnational exchange (mw)']
     REQUIRED_COLUMNS = [
         "timestamp", "frequency_hz", "power_demand_mw", "report_date"
     ]

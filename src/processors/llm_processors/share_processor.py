@@ -13,7 +13,7 @@ from loguru import logger
 class ShareProcessor(BaseProcessor):
     """Processor for the 'Share' table."""
     TABLE_TYPE = "share"
-    KEYWORDS = ['share', 'res', 'non-fossil', 'hydro', 'nuclear', 'generation', 'nr', 'wr', 'sr', 'er', 'ner', 'all india']
+    KEYWORDS = ['share', 'res', 'non-fossil', 'hydro', 'nuclear', 'generation', 'nr', 'wr', 'sr', 'er', 'ner', 'all india', 'share percentage', 'share data', 'generation share']
     REQUIRED_COLUMNS = [
         "measure", "region_name", "share_percentage", "report_date"
     ]
