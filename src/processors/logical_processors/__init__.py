@@ -11,6 +11,11 @@ rather than LLM-based processing.
 from .state_summary_processor import StateSummaryProcessor
 from .ddf_processor import DDFProcessor
 from .inter_region_transmission_processor import InterRegionTransmissionProcessor
+from .regional_summary_logical_processor import RegionalSummaryLogicalProcessor
+from .generation_by_source_logical_processor import GenerationBySourceLogicalProcessor
+from .frequency_profile_logical_processor import FrequencyProfileLogicalProcessor
+from .solar_non_solar_peak_logical_processor import SolarNonSolarPeakLogicalProcessor
+from .transnational_summary_logical_processor import TransnationalSummaryLogicalProcessor
 from .raw_state_table_processing import (
     process_state_table_robustly,
     validate_state_table_data,
@@ -23,6 +28,11 @@ __all__ = [
     'StateSummaryProcessor',
     'DDFProcessor',
     'InterRegionTransmissionProcessor',
+    'RegionalSummaryLogicalProcessor',
+    'GenerationBySourceLogicalProcessor',
+    'FrequencyProfileLogicalProcessor',
+    'SolarNonSolarPeakLogicalProcessor',
+    'TransnationalSummaryLogicalProcessor',
     # Legacy functions for backward compatibility
     'process_state_table_robustly',
     'validate_state_table_data',

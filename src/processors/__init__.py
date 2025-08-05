@@ -32,6 +32,11 @@ from .logical_processors import (
     StateSummaryProcessor,
     DDFProcessor,
     InterRegionTransmissionProcessor,
+    RegionalSummaryLogicalProcessor,
+    GenerationBySourceLogicalProcessor,
+    FrequencyProfileLogicalProcessor,
+    SolarNonSolarPeakLogicalProcessor,
+    TransnationalSummaryLogicalProcessor,
     # Legacy functions for backward compatibility
     process_state_table_robustly,
     validate_state_table_data,
@@ -42,18 +47,18 @@ from .logical_processors import (
 
 # Map table types to their corresponding processor classes
 PROCESSOR_MAP = {
-    "regional_daily_summary": RegionalSummaryProcessor,
+    "regional_daily_summary": RegionalSummaryLogicalProcessor,  # Use logical processor
     "state_daily_summary": StateSummaryProcessor,
-    "generation_by_source": GenerationBySourceProcessor,
+    "generation_by_source": GenerationBySourceLogicalProcessor,  # Use logical processor
     "generation_outages": GenerationOutagesProcessor,
     "inter_regional_transmission": InterRegionTransmissionProcessor,
     "transnational_transmission": TransnationalTransmissionProcessor,
     "transnational_exchange": TransnationalExchangeProcessor,
-    "transnational_summary": TransnationalSummaryProcessor,
+    "transnational_summary": TransnationalSummaryLogicalProcessor,  # Use logical processor
     "regional_import_export_summary": RegionalImportExportSummaryProcessor,
     "share": ShareProcessor,
-    "solar_non_solar_peak": SolarNonSolarPeakProcessor,
-    "frequency_profile": FrequencyProfileProcessor,
+    "solar_non_solar_peak": SolarNonSolarPeakLogicalProcessor,  # Use logical processor
+    "frequency_profile": FrequencyProfileLogicalProcessor,  # Use logical processor
     "scada_timeseries": ScadaTimeseriesProcessor,
     "ddf": DDFProcessor,
 }
@@ -96,6 +101,12 @@ __all__ = [
     'FrequencyProfileProcessor',
     'ScadaTimeseriesProcessor',
     'DDFProcessor',
+    # Logical processors
+    'RegionalSummaryLogicalProcessor',
+    'GenerationBySourceLogicalProcessor',
+    'FrequencyProfileLogicalProcessor',
+    'SolarNonSolarPeakLogicalProcessor',
+    'TransnationalSummaryLogicalProcessor',
     'get_processor',
     'PROCESSOR_MAP'
 ] 
